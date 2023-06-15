@@ -1,6 +1,8 @@
 {
   "name": "md-links",
+  "description": "Library that allows you to search MD files and validate links",
   "version": "0.1.0",
+  "author": "Tamara AB",
   "engines": {
     "node": ">=16.x"
   },
@@ -8,5 +10,18 @@
     "createdAt": "2023-05-17T14:36:24.002Z",
     "version": "6.2.0",
     "commit": "6de8e2f7e38d779fd6845c63477977fb1eb3af99"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.1"
+  },
+  "scripts": {
+    "eslint": "eslint --ext .js src/ test/",
+    "pretest": "npm run eslint"
+  },
+  "devDependencies": {
+    "eslint": "^8.42.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jest": "^25.7.0"
   }
 }
