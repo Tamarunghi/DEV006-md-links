@@ -46,19 +46,30 @@ const readMdFile = (file)=> {
 };
 
 // ---Extract links from md files--- \\
-const { extractLinks } = require("axios-http-link-parser");
+const extractLinks = (file) => {
+const md= new MarkdownIt();
+const result = md.render(file);
+const dom = new JSDOM(result); // se utiliza para construir un entorno simulado del DOM a partir de un contenido dado
+const document = dom.window.document; 
+// En resumen, esta línea te permite acceder al objeto document del entorno DOM simulado creado por jsdom \\
+// can be also written with destructuration: const {document}=dom.window \\
+const links = document.querySelectorAll("a"); //  se busca todos los elementos <a> (enlaces) del documento \\
 
-const getLinks = (filePath) => {
-  const fileContent = fs.readFileSync(filePath, "utf-8");
-  const links = extractLinks(fileContent, filePath);
-  return links;
+const linksArray = [];
+links.forEach(link => {
+ const href = link.href;
+    if (href.startsWith("https")){
+        linksArray.push(href);
+    }
+});
+return linksArray;  
 };
 
-// Ejemplo de uso
-const filePath = "./linkTests/links.md";
+const mdFilePath = "./linkTests/links.md";
+const mdFileContent = readMdFile(mdFilePath);
 
-const links = getLinks(filePath);
-console.log(links);
+const test = extractLinks(mdFileContent);
+console.log("extractLinks: ", JSON.stringify(test));
 
 // ---Testing if functions are working--- \\
     /* Path Exists */       const resultPathExists = pathExists("./linkTests");
