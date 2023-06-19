@@ -1,6 +1,8 @@
 // ---Imports--- \\
 const fs = require("fs");
 const path = require("path");
+const MarkdownIt = require("markdown-it");
+const { JSDOM } = require("jsdom");
 
 /* "__dirname" para ver la carpeta en donde esta ubicado nuestro archivo*/
 
@@ -10,8 +12,19 @@ const pathExists = (filePath)=> {
 };
 
 // ---Validate if path is absolute---\\
-const validatePath = (filePath)=> {
+const validatePathAbsolute = (filePath)=> {
     return path.isAbsolute(filePath);
+};
+
+// ---Validate if path is a directory---\\
+const validatePathDirectory = (filePath) =>{
+    try{
+        const isDirectory = fs.statSync(filePath).isDirectory();
+        return isDirectory
+    } catch (error) {
+        console.error("An error has ocurred", error);
+        return null
+    }
 };
 
 // ---Transform path to absolute--- \\
@@ -19,36 +32,56 @@ const absolutePath = (filePath)=>
     path.resolve(filePath);
 
 // ---Find markdown files--- \\
-const findPath = (filePath)=>
+const fidMdFiles = (filePath)=>
     filePath.endsWith(".md");
 
-// ---Find markdown files--- \\
+// ---Read markdown files--- \\
 const readMdFile = (file)=> {
-    try {
+    try { // no usar try, usar then
         const data = fs.readFileSync(file, "utf-8");
-        console.log(data);
         return data;
     } catch (err) {
         console.error(err);
     }
 };
 
+// ---Extract links from md files--- \\
+const { extractLinks } = require("axios-http-link-parser");
+
+const getLinks = (filePath) => {
+  const fileContent = fs.readFileSync(filePath, "utf-8");
+  const links = extractLinks(fileContent, filePath);
+  return links;
+};
+
+// Ejemplo de uso
+const filePath = "./linkTests/links.md";
+
+const links = getLinks(filePath);
+console.log(links);
+
 // ---Testing if functions are working--- \\
-    /* Path Exists */   const resultPathExists = pathExists("./linkTests");
-                        console.log("pathExists: " + resultPathExists);
-    /* Validate Path */ const resultValidatePath = validatePath("./linkTests");
-                        console.log("validatePath: " + resultValidatePath);                        
-    /* absolute Path */ const resultAbsolutePath = absolutePath("./linkTests");
-                        console.log("absolutePath: " + resultAbsolutePath);
-    /* Find Path */     const resultFindPath = findPath("./linkTests");
-                        console.log("findPath: " + resultFindPath);
-     /* Read Md file */ const resultReadMdFile = readMdFile("./linkTests/links.txt");
-                        console.log("readMdFile: " + resultReadMdFile);
+    /* Path Exists */       const resultPathExists = pathExists("./linkTests");
+                            console.log("pathExists: " + resultPathExists);
+    /* Validate Path A */   const resultvalidatePathAbsolute = validatePathAbsolute("./linkTests");
+                            console.log("validatePathAbsolute: " + resultvalidatePathAbsolute);
+    /* absolute Path D */   const resultvalidatePathDirectory = validatePathDirectory("./linkTests");
+                            console.log("validatePathDirectory: " + resultvalidatePathDirectory);                            
+    /* absolute Path */     const resultAbsolutePath = absolutePath("./linkTests");
+                            console.log("absolutePath: " + resultAbsolutePath);                   
+    /* Find Path */         const resultfidMdFiles = fidMdFiles("./linkTests");
+                            console.log("fidMdFiles: " + resultfidMdFiles);
+     /* Read Md file */     const resultReadMdFile = readMdFile("./linkTests/links.md");
+                            console.log("readMdFile: " + resultReadMdFile);
 
 // ---Import--- \\
 module.exports = {
     pathExists,
-    validatePath,
+    resultvalidatePathAbsolute,
+    resultvalidatePathDirectory,
     absolutePath,
-    findPath
+    fidMdFiles,
+    readMdFile,
 };
+
+// node functions.js
