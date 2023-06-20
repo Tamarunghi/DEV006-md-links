@@ -36,60 +36,81 @@ const fidMdFiles = (filePath)=>
     filePath.endsWith(".md");
 
 // ---Read markdown files--- \\
-const readMdFile = (file)=> {
-    try { // no usar try, usar then
+/* Version sync: const readMdFile = (file)=> {
+    try { // usar promesa
         const data = fs.readFileSync(file, "utf-8");
         return data;
     } catch (err) {
         console.error(err);
     }
-};
+};*/
+const readMdFile = (fileContent)=> {
+    return new Promise((resolve, reject) => {
+        fs.readFile(fileContent, "utf-8", (err, data) => {
+            if (err){
+                reject("An error has ocurred")
+            }
+            resolve(data)
+          });
+    });
+}
 
 // ---Extract links from md files--- \\
-const extractLinks = (file) => {
-const md= new MarkdownIt();
-const result = md.render(file);
-const dom = new JSDOM(result); // se utiliza para construir un entorno simulado del DOM a partir de un contenido dado
-const document = dom.window.document; 
-// En resumen, esta línea te permite acceder al objeto document del entorno DOM simulado creado por jsdom \\
-// can be also written with destructuration: const {document}=dom.window \\
-const links = document.querySelectorAll("a"); //  se busca todos los elementos <a> (enlaces) del documento \\
+const extractLinks = (fileContent, file) => {
+    const md= new MarkdownIt();
+    const result = md.render(fileContent);
+    const dom = new JSDOM(result); // se utiliza para construir un entorno simulado del DOM a partir de un contenido dado
+    const document = dom.window.document; 
+    // En resumen, esta línea te permite acceder al objeto document del entorno DOM simulado creado por jsdom \\
+    // can be also written with destructuration: const {document}=dom.window \\
+    const links = document.querySelectorAll("a"); //  se busca todos los elementos <a> (enlaces) del documento \\
+    const linksArray = [];
+    links.forEach(link => {
+     const href = link.href;
+     const text = link.textContent.slice(0,50);
+        if (href.startsWith("http")){
+            linksArray.push({href, text, file});
+        }
+    });
+    //console.log(linksArray)
+    return linksArray
+   };
+    
+// ---Validate links--- \\
 
-const linksArray = [];
-links.forEach(link => {
- const href = link.href;
-    if (href.startsWith("https")){
-        linksArray.push(href);
-    }
-});
-return linksArray;  
-};
 
-const mdFilePath = "./linkTests/links.md";
-const mdFileContent = readMdFile(mdFilePath);
-
-const test = extractLinks(mdFileContent);
-console.log("extractLinks: ", JSON.stringify(test));
-
-// ---Testing if functions are working--- \\
+   // ---Testing if functions are working--- \\
+    // ---Testing if functions are working--- \\
     /* Path Exists */       const resultPathExists = pathExists("./linkTests");
-                            console.log("pathExists: " + resultPathExists);
+                            console.log("--pathExists: " + resultPathExists);
     /* Validate Path A */   const resultvalidatePathAbsolute = validatePathAbsolute("./linkTests");
-                            console.log("validatePathAbsolute: " + resultvalidatePathAbsolute);
+                            console.log("--validatePathAbsolute: " + resultvalidatePathAbsolute);
     /* absolute Path D */   const resultvalidatePathDirectory = validatePathDirectory("./linkTests");
-                            console.log("validatePathDirectory: " + resultvalidatePathDirectory);                            
+                            console.log("--validatePathDirectory: " + resultvalidatePathDirectory);                            
     /* absolute Path */     const resultAbsolutePath = absolutePath("./linkTests");
-                            console.log("absolutePath: " + resultAbsolutePath);                   
+                            console.log("--absolutePath: " + resultAbsolutePath);                   
     /* Find Path */         const resultfidMdFiles = fidMdFiles("./linkTests");
-                            console.log("fidMdFiles: " + resultfidMdFiles);
-     /* Read Md file */     const resultReadMdFile = readMdFile("./linkTests/links.md");
-                            console.log("readMdFile: " + resultReadMdFile);
+                            console.log("--fidMdFiles: " + resultfidMdFiles);
+     /* Read Md file */     readMdFile("./linkTests/links.md").then(result =>{
+                                console.log("--readMdFile" + result);
+                                })
+                                .catch((error) => {
+                                    console.error(error)
+                                });                                                    
+    /*Extract Links */      readMdFile("./linkTests/links.md").then(result =>{
+                            const resultExtractLinks = extractLinks(result, resultAbsolutePath);
+                            console.log("--extractLinks: " + resultExtractLinks);
+                            })
+                            .catch((error) => {
+                            console.error(error)
+                            });                                    
+                            
 
 // ---Import--- \\
 module.exports = {
     pathExists,
-    resultvalidatePathAbsolute,
-    resultvalidatePathDirectory,
+    validatePathAbsolute,
+    validatePathDirectory,
     absolutePath,
     fidMdFiles,
     readMdFile,
