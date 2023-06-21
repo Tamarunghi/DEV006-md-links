@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const MarkdownIt = require("markdown-it");
 const { JSDOM } = require("jsdom");
+const axios = require('axios');
 
 /* "__dirname" para ver la carpeta en donde esta ubicado nuestro archivo*/
 
@@ -76,10 +77,37 @@ const extractLinks = (fileContent, file) => {
     return linksArray
    };
     
-// ---Validate links--- \\
-
-
-   // ---Testing if functions are working--- \\
+// ---Verify links--- \\
+const verifyLinks = (links) => {
+    const linkPromises = links.map((link) => {
+      return axios
+        .get(link.href)
+        .then((response) => {
+          const validateTrue = {
+            Href: link.href,
+            Text: link.text,
+            File: link.file,
+            Status: response.status === 200 ? 200 : 400,
+            StatusText: response.statusText === 200 ? "Ok" : "Fail",
+          };
+          return validateTrue;
+        })
+        .catch((error) => {
+            const validateFalse = {
+                Href: link.href,
+                Text: link.text,
+                File: link.file,
+                Status: error.message,
+                StatusText: error.name,
+              };
+              return validateFalse;
+        })
+    });
+  
+    return Promise.all(linkPromises);
+  };
+  
+  
     // ---Testing if functions are working--- \\
     /* Path Exists */       const resultPathExists = pathExists("./linkTests");
                             console.log("--pathExists: " + resultPathExists);
@@ -87,23 +115,35 @@ const extractLinks = (fileContent, file) => {
                             console.log("--validatePathAbsolute: " + resultvalidatePathAbsolute);
     /* absolute Path D */   const resultvalidatePathDirectory = validatePathDirectory("./linkTests");
                             console.log("--validatePathDirectory: " + resultvalidatePathDirectory);                            
-    /* absolute Path */     const resultAbsolutePath = absolutePath("./linkTests");
+    /* Absolute Path */     const resultAbsolutePath = absolutePath("./linkTests");
                             console.log("--absolutePath: " + resultAbsolutePath);                   
     /* Find Path */         const resultfidMdFiles = fidMdFiles("./linkTests");
                             console.log("--fidMdFiles: " + resultfidMdFiles);
-     /* Read Md file */     readMdFile("./linkTests/links.md").then(result =>{
+     /* Read Md file */     readMdFile("./linkTests/links.md")
+                                .then(result =>{
                                 console.log("--readMdFile" + result);
                                 })
                                 .catch((error) => {
                                     console.error(error)
                                 });                                                    
-    /*Extract Links */      readMdFile("./linkTests/links.md").then(result =>{
+    /* Extract Links */      readMdFile("./linkTests/links.md")
+                            .then(result =>{
                             const resultExtractLinks = extractLinks(result, resultAbsolutePath);
-                            console.log("--extractLinks: " + resultExtractLinks);
+                            console.log("--extractLinks: " + JSON.stringify(resultExtractLinks));
                             })
                             .catch((error) => {
                             console.error(error)
-                            });                                    
+                            });  
+ /* Verify Links */                             
+                            const links = [
+                                { href: './linkTests/links.md', text: 'Links', file: 'links.html' },
+                                { href: 'https://openai.com', text: 'OpenAI', file: 'openai.html' },
+                                { href: 'https://youtube.com', text: 'Youtube', file: 'youtube.html' },
+                              ];
+                              
+                              verifyLinks(links)
+                                .then((results) => console.log(results))
+                                .catch((error) => console.error(error));
                             
 
 // ---Import--- \\
@@ -114,6 +154,24 @@ module.exports = {
     absolutePath,
     fidMdFiles,
     readMdFile,
+    extractLinks,
 };
 
 // node functions.js
+
+/*JSON.stringify() es un método en JavaScript que convierte un objeto JavaScript
+ en una cadena JSON legible y fácilmente procesable. Toma un objeto o valor como argumento
+  y devuelve una representación de cadena JSON.
+    Ej:
+        const persona = {
+            nombre: "Juan",
+            edad: 30,
+            ciudad: "Madrid"
+
+        const personaJSON = JSON.stringify(persona);
+        console.log(personaJSON); 
+        salida: {"nombre":"Juan","edad":30,"ciudad":"Madrid"}
+        sin JSON: { nombre: 'Juan', edad: 30, ciudad: 'Madrid' }
+};
+  
+  */
