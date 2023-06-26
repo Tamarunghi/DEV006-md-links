@@ -8,9 +8,12 @@ const axios = require('axios');
 /* "__dirname" para ver la carpeta en donde esta ubicado nuestro archivo*/
 
 // ---Validate if path exists--- \\
-const pathExists = (filePath)=> {
+const pathExist = (filePath)=> {
     return fs.existsSync(filePath);
 };
+
+// ---Validate if path is a file---\\
+const isFile = (filePath) => fs.statSync(filePath).isFile();
 
 // ---Validate if path is absolute---\\
 const validatePathAbsolute = (filePath)=> {
@@ -29,11 +32,33 @@ const validatePathDirectory = (filePath) =>{
 };
 
 // ---Transform path to absolute--- \\
-const absolutePath = (filePath)=>
+const toAbsolutePath = (filePath)=>
     path.resolve(filePath);
 
-// ---Find markdown files--- \\
-const fidMdFiles = (filePath)=>
+// ---recursive function--- \\ 
+    const recursive = (filePath, arrayMd = []) => {
+        const stats = fs.statSync(filePath); /*para obtener info de archivo o directorio en forma de objeto */
+           
+        if (isFile(filePath)) {
+          const absolute = toAbsolutePath(filePath);
+          arrayMd.push(absolute);
+        } else if (stats.isDirectory()) {
+          const filesArray = fs.readdirSync(filePath);
+          // readdirSync da array con nombres de archivos del filePath
+          filesArray.forEach((element) => {
+            const newFilePath = path.join(filePath, element);
+            const newAbsolute = toAbsolutePath(newFilePath);
+            recursive(newAbsolute, arrayMd);
+          });
+        } else {
+          return null;
+        }
+        return arrayMd;
+      };
+       
+
+// ---Validate markdown files--- \\
+const validateFile = (filePath)=>
     filePath.endsWith(".md");
 
 // ---Read markdown files--- \\
@@ -45,17 +70,17 @@ const fidMdFiles = (filePath)=>
         console.error(err);
     }
 };*/
-const readMdFile = (fileContent)=> {
+const readMdFile = (filePath)=> {
     return new Promise((resolve, reject) => {
-        fs.readFile(fileContent, "utf-8", (err, data) => {
-            if (err){
+        fs.readFile(filePath, "utf-8", (error, fileContent) => {
+            if (error){
                 reject("An error has ocurred")
             }
-            resolve(data)
+            resolve(fileContent)
           });
     });
 }
-
+ 
 // ---Extract links from md files--- \\
 const extractLinks = (fileContent, file) => {
     const md= new MarkdownIt();
@@ -82,14 +107,15 @@ const verifyLinks = (links) => {
     const linkPromises = links.map((link) => {
       return axios
         .get(link.href)
-        .then((response) => {
+        .then((result) => {
           const validateTrue = {
             Href: link.href,
             Text: link.text,
             File: link.file,
-            Status: response.status === 200 ? 200 : 400,
-            StatusText: response.statusText === 200 ? "Ok" : "Fail",
-          };
+            Status: result.status,
+            StatusText: result.status <= 399 ? "Ok" : "Fail",
+            /* if true return Ok, false, Fail*/
+        };
           return validateTrue;
         })
         .catch((error) => {
@@ -98,7 +124,7 @@ const verifyLinks = (links) => {
                 Text: link.text,
                 File: link.file,
                 Status: error.message,
-                StatusText: error.name,
+                StatusText: "Fail",
               };
               return validateFalse;
         })
@@ -109,52 +135,62 @@ const verifyLinks = (links) => {
   
   
     // ---Testing if functions are working--- \\
-    /* Path Exists */       const resultPathExists = pathExists("./linkTests");
-                            console.log("--pathExists: " + resultPathExists);
-    /* Validate Path A */   const resultvalidatePathAbsolute = validatePathAbsolute("./linkTests");
-                            console.log("--validatePathAbsolute: " + resultvalidatePathAbsolute);
-    /* absolute Path D */   const resultvalidatePathDirectory = validatePathDirectory("./linkTests");
-                            console.log("--validatePathDirectory: " + resultvalidatePathDirectory);                            
-    /* Absolute Path */     const resultAbsolutePath = absolutePath("./linkTests");
-                            console.log("--absolutePath: " + resultAbsolutePath);                   
-    /* Find Path */         const resultfidMdFiles = fidMdFiles("./linkTests");
-                            console.log("--fidMdFiles: " + resultfidMdFiles);
-     /* Read Md file */     readMdFile("./linkTests/links.md")
-                                .then(result =>{
-                                console.log("--readMdFile" + result);
-                                })
-                                .catch((error) => {
-                                    console.error(error)
-                                });                                                    
-    /* Extract Links */      readMdFile("./linkTests/links.md")
-                            .then(result =>{
-                            const resultExtractLinks = extractLinks(result, resultAbsolutePath);
-                            console.log("--extractLinks: " + JSON.stringify(resultExtractLinks));
-                            })
-                            .catch((error) => {
-                            console.error(error)
-                            });  
- /* Verify Links */                             
-                            const links = [
-                                { href: './linkTests/links.md', text: 'Links', file: 'links.html' },
-                                { href: 'https://openai.com', text: 'OpenAI', file: 'openai.html' },
-                                { href: 'https://youtube.com', text: 'Youtube', file: 'youtube.html' },
-                              ];
+//     /* Path Exists */       const resultPathExists = pathExist("./linkTests");
+//                             console.log("--pathExist: " + resultPathExists);
+//     /* Validate Path F */   const resultIsFile = isFile("./linkTests")
+//                             console.log("--isFile: " + resultIsFile);
+//     /* Validate Path A */   const resultvalidatePathAbsolute = validatePathAbsolute("./linkTests");
+//                             console.log("--validatePathAbsolute: " + resultvalidatePathAbsolute);
+//     /* absolute Path D */   const resultvalidatePathDirectory = validatePathDirectory("./linkTests");
+//                             console.log("--validatePathDirectory: " + resultvalidatePathDirectory);                            
+//     /* Absolute Path */     const resultToAbsolutePath = toAbsolutePath("./linkTests");
+//                             console.log("--toAbsolutePath: " + resultToAbsolutePath);                   
+//     /* Recursive */         const filesMd = recursive("./linkTests");
+//                             console.log("--Recursive", filesMd);
+
+//     /* Validate Path */     const resultvalidateFile = validateFile("./linkTests");
+//                             console.log("--validateFile: " + resultvalidateFile);
+//      /* Read Md file */     readMdFile("./linkTests/links.md")
+//                                 .then(result =>{
+//                                 console.log("--readMdFile" + result);
+//                                 })
+//                                 .catch((error) => {
+//                                     console.error(error)
+//                                 });                                                    
+//     /* Extract Links */      readMdFile("./linkTests/links.md")
+//                             .then(result =>{
+//                             const resultExtractLinks = extractLinks(result, resultToAbsolutePath);
+//                             console.log("--extractLinks: " + JSON.stringify(resultExtractLinks));
+//                             })
+//                             .catch((error) => {
+//                             console.error(error)
+//                             });  
+//  /* Verify Links */                             
+                            // const links = [
+                            //     { href: './linkTests/links.md', text: 'Links', file: 'links.html' },
+                            //     { href: 'https://openai.com', text: 'OpenAI', file: 'openai.html' },
+                            //     { href: 'https://youtube.com', text: 'Youtube', file: 'youtube.html' },
+                            //     { href: 'http://www.wikiedia.org', text: 'Wikipedia', file: 'wikipedia.html' },
+                            //     { href: ' https://www.amazon.com', text: 'Amazon', file: 'amazon.html' },                              
+                            //   ];
                               
-                              verifyLinks(links)
-                                .then((results) => console.log(results))
-                                .catch((error) => console.error(error));
+                            //     verifyLinks(links)
+                            //       .then((results) => console.log(results))
+                            //       .catch((error) => console.error(error));
                             
 
-// ---Import--- \\
+// ---Export--- \\
 module.exports = {
-    pathExists,
+    pathExist,
+    isFile,
     validatePathAbsolute,
     validatePathDirectory,
-    absolutePath,
-    fidMdFiles,
+    toAbsolutePath,
+    recursive,
+    validateFile,
     readMdFile,
     extractLinks,
+    verifyLinks,
 };
 
 // node functions.js
