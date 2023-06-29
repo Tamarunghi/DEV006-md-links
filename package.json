@@ -21,7 +21,7 @@
   "scripts": {
     "eslint": "eslint --ext .js test/",
     "pretest": "npm run eslint",
-    "test": "jest"
+    "test": "jest --coverage"
   },
   "devDependencies": {
     "eslint": "^8.42.0",

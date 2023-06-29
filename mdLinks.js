@@ -1,7 +1,7 @@
 // ---NODE.js Import--- \\
 const fs = require("fs"); 
 
-// ---functions Import--- \\
+// ---Imports--- \\
 const {pathExist,              validatePathAbsolute,
       validatePathDirectory,    toAbsolutePath,
       recursive,                validateFile,
@@ -69,3 +69,7 @@ mdLinks("./linkTests/links.md", {validate:true})
        mdLinks,
     };
   
+    // ---Export--- \\
+module.exports = {
+  mdLinks
+};
