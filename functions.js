@@ -177,7 +177,6 @@ const verifyLinks = (links) => {
 //  /* Verify Links */                             
 //                            const links = [
 //                            { href: './linkTests/links.md', text: 'Links', file: 'links.html' },
-//                            { href: 'https://openai.com', text: 'OpenAI', file: 'openai.html' },
 //                            { href: 'https://youtube.com', text: 'Youtube', file: 'youtube.html' },
 //                            { href: 'http://www.wikiedia.org', text: 'Wikipedia', file: 'wikipedia.html' },
 //                            { href: ' https://www.amazon.com', text: 'Amazon', file: 'amazon.html' },                              

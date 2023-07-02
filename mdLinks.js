@@ -2,11 +2,9 @@
 const fs = require("fs"); 
 
 // ---Imports--- \\
-const {pathExist,              validatePathAbsolute,
-      validatePathDirectory,    toAbsolutePath,
-      recursive,                validateFile,
-      readMdFile,               extractLinks,
-      verifyLinks,              isFile,
+const {pathExist,              recursive,
+      validateFile,            readMdFile,  
+      extractLinks,            verifyLinks,
       } = require("./functions")
 
 
@@ -54,20 +52,18 @@ lo que esta dentro de los {} se establece por defecto */
   });
 };
     
-mdLinks("./linkTests/links.md", {validate:true})
-  .then((resolvedPath) => {
-  console.log(resolvedPath);
-  })
-  .catch((error) => {
-  console.error(error.message);
-});
+//---console.log test---\\
+// mdLinks("./linkTests", {validate:true})
+//   .then((resolvedPath) => {
+//   console.log(resolvedPath);
+//   })
+//   .catch((error) => {
+//   console.error(error.message);
+// });
 
  /* Promise.all es un metodo que combina múltiples promesas en una sola 
       promesa que se resuelve cuando todas las promesas están resueltas. */  
   
-      module.exports = {
-       mdLinks,
-    };
   
     // ---Export--- \\
 module.exports = {
