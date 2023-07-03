@@ -15,7 +15,7 @@ Library designed for programmers to extract and validate the links within Markdo
 
 ## 3. Flowchart 
 Flowchart use to create this library
-![flowchart](".images/FlowchartForReadme")
+![flowchart](".images/FlowchartForReadme.png")
 
 pendiente de subir a node
 
