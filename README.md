@@ -17,7 +17,9 @@ Library designed for programmers to extract and validate the links within Markdo
 Flowchart use to create this library
 ![flowchart](images/FlowchartForReadme.png)
 
-pendiente de subir a node
+## 3. Installation 
+To install write in your terminal
+`npm install mdlinks-tamarindo`
 
 ## 4. Tutorial
 
